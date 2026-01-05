@@ -1,0 +1,40 @@
+[workspace]
+members = ["cleaner", "widget", "app", "status", "common-debug"]
+
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+authors = ["ziprangga"]
+license = "MIT"
+
+[workspace.dependencies]
+plist = "1.3"
+walkdir = "2.3"
+rayon = "1.11"
+sysinfo = "0.37"
+# ================
+log = "0.4"
+anyhow = "1.0.100"
+tokio = { version = "1.49", features = ["full"] }
+futures = "0.3.31"
+tokio-stream = "0.1.18"
+rfd = "0.17"
+iced = { git = "https://github.com/ziprangga/iced.git", features = [
+    "image-without-codecs",
+    "tokio",
+    "canvas",
+    "wgpu",
+    "advanced",
+] }
+
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+lto = false
+codegen-units = 16

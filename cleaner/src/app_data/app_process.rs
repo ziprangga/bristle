@@ -1,0 +1,89 @@
+use std::ffi::OsString;
+use std::process::Command;
+
+use anyhow::Result;
+use rayon::prelude::*;
+use sysinfo::{ProcessesToUpdate, System};
+
+use crate::AppInfo;
+use common_debug::debug_dev;
+
+#[derive(Debug, Clone)]
+pub struct AppProcess {
+    pub pid: i32,
+    pub command: String,
+}
+
+impl AppProcess {
+    pub fn new(pid: i32, command: String) -> Self {
+        Self { pid, command }
+    }
+
+    pub fn find_app_processes(app: &AppInfo) -> Vec<Self> {
+        let mut sys = System::new();
+        sys.refresh_processes(ProcessesToUpdate::All, true);
+
+        let patterns = [
+            app.bundle_name.clone(),
+            app.bundle_id.clone(),
+            app.organization.clone(),
+            format!("{} Helper", app.bundle_name),
+        ];
+
+        sys.processes()
+            .par_iter()
+            .filter_map(|(&pid, process)| {
+                // Join full command line for debug
+                let cmd_line = process
+                    .cmd()
+                    .iter()
+                    .map(|s: &OsString| s.to_string_lossy().into_owned())
+                    .collect::<Vec<_>>()
+                    .join(" ");
+
+                debug_dev!(
+                    "PID {}: cmd_line = '{}', checking patterns {:?}",
+                    pid,
+                    cmd_line,
+                    patterns
+                );
+
+                // Convert process.name() to string for pattern matching
+                let process_name = process.name().to_string_lossy();
+
+                // Match if command line contains pattern OR process name contains pattern
+                let is_match = patterns
+                    .iter()
+                    .any(|pat| cmd_line.contains(pat) || process_name.contains(pat));
+
+                if is_match {
+                    Some(Self::new(pid.as_u32() as i32, cmd_line))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn kill_app_processes(app_name: &str, processes: &[AppProcess]) -> Result<()> {
+        if processes.is_empty() {
+            println!("No running processes found for {}", app_name);
+            return Ok(());
+        }
+
+        let pids = processes
+            .iter()
+            .map(|p| p.pid.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        let script = format!(
+            r#"do shell script "kill {} 2>/dev/null" with administrator privileges"#,
+            pids
+        );
+
+        Command::new("osascript").arg("-e").arg(script).status()?;
+
+        Ok(())
+    }
+}

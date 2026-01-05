@@ -1,0 +1,14 @@
+[package]
+name = "cleaner"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+common-debug = { path = "../common-debug" }
+status = { path = "../status" }
+log = { workspace = true }
+anyhow = { workspace = true }
+plist = { workspace = true }
+walkdir = { workspace = true }
+rayon = { workspace = true }
+sysinfo = { workspace = true }
