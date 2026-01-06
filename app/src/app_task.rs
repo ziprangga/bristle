@@ -53,8 +53,8 @@ pub async fn open_loc_async(path: PathBuf) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Open location failed: {}", e))?
 }
 
-pub async fn save_bom_logs_async(cleaner: Cleaner, log_dir: Option<PathBuf>) -> Result<()> {
-    tokio::task::spawn_blocking(move || cleaner.save_bom_logs(log_dir.as_deref()))
+pub async fn save_bom_logs_async(cleaner: Cleaner, log_dir: PathBuf) -> Result<()> {
+    tokio::task::spawn_blocking(move || cleaner.save_bom_logs(&log_dir))
         .await
         .map_err(|e| anyhow::anyhow!("Save bom  logs failed: {}", e))?
 }

@@ -32,8 +32,7 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
         .into_iter()
         .map(|(i, (path, label))| {
             // ===============
-            use std::env;
-            let home = env::var("HOME").unwrap();
+            let home = std::env::var("HOME").unwrap();
 
             let display_path = path
                 .strip_prefix(format!("{home}/"))

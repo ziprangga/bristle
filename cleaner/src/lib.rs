@@ -1,11 +1,13 @@
 mod app_data;
 pub use app_data::*;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use status::StatusEmitter;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
+
+use common_debug::debug_dev;
 
 #[derive(Debug, Default, Clone)]
 pub struct Cleaner {
@@ -110,19 +112,14 @@ impl Cleaner {
     }
 
     /// Save BOM logs of the current app to the given folder
-    pub fn save_bom_logs(&self, log_dir: Option<&Path>) -> Result<()> {
+    pub fn save_bom_logs(&self, log_dir: &Path) -> Result<()> {
         // Determine the folder
-        let base_folder: PathBuf = match log_dir {
-            Some(p) => p.to_path_buf(),
-            None => {
-                let home = std::env::var("HOME").context("Could not determine HOME directory")?;
-                Path::new(&home).join("Desktop/BOM_Logs")
-            }
-        };
+        let app_log_folder =
+            Path::new(log_dir).join(format!("{}_bom_log", &self.app_data.app.name));
+        debug_dev!("Creating folder: {}", app_log_folder.display());
 
-        let app_folder = base_folder.join(&self.app_data.app.name);
         // Call the LogReceipt function
-        self.app_data.log.save_bom_log(&app_folder)
+        self.app_data.log.save_bom_log(&app_log_folder)
     }
 
     /// Move all associated files including the app itself to trash

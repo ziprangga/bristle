@@ -79,7 +79,7 @@ impl LogReceipt {
     //     Ok(())
     // }
 
-    /// Save all BOM files to the given log directory in parallel
+    //// Save all BOM files to the given log directory in parallel
     pub fn save_bom_log(&self, log_dir: &Path) -> Result<()> {
         std::fs::create_dir_all(log_dir)
             .with_context(|| format!("Failed to create log folder: {}", log_dir.display()))?;

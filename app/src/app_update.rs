@@ -1,5 +1,6 @@
 use futures::StreamExt;
 use iced::{Event, Subscription, Task, window};
+use std::path::Path;
 use tokio_stream::wrappers::ReceiverStream;
 
 use common_debug::debug_dev;
@@ -131,25 +132,27 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
         }
 
         AppMessage::ExportFile => {
-            let output_dir = state.output_file.clone();
+            let output_dir = if !state.output_file.as_os_str().is_empty() {
+                state.output_file.clone()
+            } else {
+                let home = std::env::var("HOME").unwrap();
+                Path::new(&home).join("Desktop")
+            };
             let cleaner = state.cleaner.clone();
-            Task::perform(
-                save_bom_logs_async(cleaner, Some(output_dir)),
-                |res| match res {
-                    Ok(()) => {
-                        let event = StatusEvent::new()
-                            .with_stage("Success")
-                            .with_message("Bom file saved".to_string());
-                        AppMessage::Status(StatusMessage::Event(event))
-                    }
-                    Err(err) => {
-                        let event = StatusEvent::new()
-                            .with_stage("Failed")
-                            .with_message(err.to_string());
-                        AppMessage::Status(StatusMessage::Event(event))
-                    }
-                },
-            )
+            Task::perform(save_bom_logs_async(cleaner, output_dir), |res| match res {
+                Ok(()) => {
+                    let event = StatusEvent::new()
+                        .with_stage("Success")
+                        .with_message("Bom file saved".to_string());
+                    AppMessage::Status(StatusMessage::Event(event))
+                }
+                Err(err) => {
+                    let event = StatusEvent::new()
+                        .with_stage("Failed")
+                        .with_message(err.to_string());
+                    AppMessage::Status(StatusMessage::Event(event))
+                }
+            })
         }
 
         AppMessage::TrashApp => {
