@@ -23,9 +23,9 @@ iced = { workspace = true }
 
 [package.metadata.bundle.bin.Bristle]
 name = "Bristle"
-identifier = "com.ziprangga.Bristle"
+identifier = "com.ziprangga.bristle"
 icon = ["assets/Bristle.icns"]
 version = "0.1.0"
-copyright = "Copyright (c) 2026 ziprangga. Licensed under MIT or Apache 2.0."
+copyright = "Copyright (c) 2026 ziprangga. Licensed under MIT or Apache-2.0."
 category = "Utilities"
 short_description = "Application Uninstaller"
