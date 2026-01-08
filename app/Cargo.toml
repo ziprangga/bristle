@@ -4,7 +4,7 @@ version = { workspace = true }
 edition = { workspace = true }
 
 [[bin]]
-name = "Bristle"
+name = "Bristo"
 path = "src/main.rs"
 
 [dependencies]
@@ -22,8 +22,8 @@ iced = { workspace = true }
 
 
 [package.metadata.bundle.bin.Bristle]
-name = "Bristle"
-identifier = "com.ziprangga.bristle"
+name = "Bristo"
+identifier = "com.ziprangga.Bristo"
 icon = ["assets/Bristle.icns"]
 version = "0.1.0"
 copyright = "Copyright (c) 2026 ziprangga. Licensed under MIT or Apache-2.0."
