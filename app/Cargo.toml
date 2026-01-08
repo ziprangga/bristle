@@ -24,7 +24,7 @@ iced = { workspace = true }
 [package.metadata.bundle.bin.Bristo]
 name = "Bristo"
 identifier = "com.ziprangga.Bristo"
-icon = ["assets/Bristle.icns"]
+icon = ["assets/Bristo.icns"]
 version = "0.1.0"
 copyright = "Copyright (c) 2026 ziprangga. Licensed under MIT or Apache-2.0."
 category = "Utilities"
