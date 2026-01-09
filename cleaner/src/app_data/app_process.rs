@@ -1,11 +1,10 @@
-use std::ffi::OsString;
-use std::process::Command;
-
 use anyhow::Result;
 use rayon::prelude::*;
+use std::ffi::OsString;
 use sysinfo::{ProcessesToUpdate, System};
 
 use crate::AppInfo;
+use crate::foundation::kill_pids;
 use common_debug::debug_dev;
 
 #[derive(Debug, Clone)]
@@ -77,12 +76,7 @@ impl AppProcess {
             .collect::<Vec<_>>()
             .join(" ");
 
-        let script = format!(
-            r#"do shell script "kill {} 2>/dev/null" with administrator privileges"#,
-            pids
-        );
-
-        Command::new("osascript").arg("-e").arg(script).status()?;
+        kill_pids(&pids)?;
 
         Ok(())
     }

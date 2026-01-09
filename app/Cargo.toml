@@ -4,7 +4,7 @@ version = { workspace = true }
 edition = { workspace = true }
 
 [[bin]]
-name = "BristApp"
+name = "Bristo"
 path = "src/main.rs"
 
 [dependencies]
@@ -21,10 +21,10 @@ futures = { workspace = true }
 iced = { workspace = true }
 
 
-[package.metadata.bundle.bin.BristApp]
-name = "BristApp"
-identifier = "com.ziprangga.BristApp"
-icon = ["assets/BristApp.icns"]
+[package.metadata.bundle.bin.Bristo]
+name = "Bristo"
+identifier = "com.ziprangga.Bristo"
+icon = ["assets/Bristo.icns"]
 version = "0.1.0"
 copyright = "Copyright (c) 2026 ziprangga. Licensed under MIT or Apache-2.0."
 category = "Utilities"

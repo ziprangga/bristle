@@ -90,7 +90,7 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
 
         AppMessage::UpdateCleaner(cleaner) => {
             state.cleaner = cleaner;
-            let founded = state.cleaner.app_data.all_found_entries().len();
+            let founded = state.cleaner.app_data.all_found_entries_enumerate().len();
             let event = StatusEvent::new()
                 .with_stage("Completed:")
                 .with_message(format!("{} item founded", founded));
@@ -101,7 +101,7 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
             state.selected_file = Some(index);
             debug_dev!("Clicked path: {:?}", index);
 
-            let entries = state.cleaner.app_data.all_found_entries();
+            let entries = state.cleaner.app_data.all_found_entries_enumerate();
 
             if let Some((_i, (path, _label))) = entries.get(index) {
                 let path = path.clone();
@@ -158,22 +158,43 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
         AppMessage::TrashApp => {
             let cleaner = state.cleaner.clone();
             Task::perform(trash_app_async(cleaner), |res| match res {
-                Ok(()) => AppMessage::DeletedApp(Ok("App moved to Trash".to_string())),
+                Ok(failed) => AppMessage::DeletedApp(Ok(failed)),
                 Err(err) => AppMessage::DeletedApp(Err(err.to_string())),
             })
         }
 
         AppMessage::DeletedApp(result) => {
             match result {
-                Ok(msg) => {
-                    state.reset();
-                    state.status.message = Some(msg);
+                Ok(failed_paths) => {
+                    if failed_paths.is_empty() {
+                        state.status.message = Some("App moved to Trash".to_string());
+                    } else {
+                        let failed_clone = failed_paths.clone();
+                        state.cleaner.app_data.associate_files = failed_paths
+                            .into_iter()
+                            .map(|(path, _reason)| {
+                                let label = path
+                                    .file_name()
+                                    .map(|n| n.to_string_lossy().to_string())
+                                    .unwrap_or_else(|| path.to_string_lossy().to_string());
+                                (path, label)
+                            })
+                            .collect();
+
+                        // Build the message from the actual failed paths
+                        let report = failed_clone
+                            .iter()
+                            .map(|(p, reason)| format!("{}: {}", p.display(), reason))
+                            .collect::<Vec<_>>()
+                            .join("\n");
+
+                        state.status.message = Some(report);
+                    }
                 }
                 Err(err_msg) => {
                     let event = StatusEvent::new()
-                        .with_stage("Failed")
-                        .with_message(err_msg.to_string());
-                    // AppMessage::Status(StatusMessage::Event(event));
+                        .with_stage("Failed:")
+                        .with_message(err_msg);
                     let _ = state.status.update(StatusMessage::Event(event));
                 }
             }

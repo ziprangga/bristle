@@ -31,11 +31,16 @@ impl AppInfo {
                 anyhow::anyhow!("CFBundleIdentifier not found in {}", plist_path.display())
             })?;
 
-        let app_name = Path::new(&app_path)
-            .file_stem()
-            .unwrap()
-            .to_string_lossy()
-            .into_owned();
+        let app_name = plist
+            .as_dictionary()
+            .and_then(|d| d.get("CFBundleDisplayName"))
+            .and_then(|v| v.as_string())
+            .map(|s| s.to_string())
+            .or_else(|| {
+                // fallback to file stem if CFBundleDisplayName is missing
+                Some(app_path.file_stem()?.to_string_lossy().into_owned())
+            })
+            .ok_or_else(|| anyhow!("Failed to determine app name for {}", app_path.display()))?;
 
         let executable_name = plist
             .as_dictionary()

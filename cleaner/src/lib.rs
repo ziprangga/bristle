@@ -1,13 +1,13 @@
 mod app_data;
 mod foundation;
+mod helpers;
 pub use app_data::*;
-pub use foundation::*;
+pub use helpers::*;
 
 use anyhow::Result;
 use status::StatusEmitter;
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::Command;
 
 use common_debug::debug_dev;
 
@@ -78,7 +78,9 @@ impl Cleaner {
                 .emit();
         }
 
-        self.app_data.find_log_bom();
+        let locations = LocationsScan::new();
+
+        self.app_data.find_log_bom(&locations);
 
         let total_bom_file = self.app_data.log.bom_file.len();
 
@@ -88,8 +90,6 @@ impl Cleaner {
                 .with_message("BOM logs scan completed")
                 .emit();
         }
-
-        let locations = LocationsScan::new();
 
         if let Some(s) = status {
             s.with_stage("started")
@@ -125,19 +125,19 @@ impl Cleaner {
     }
 
     /// Move all associated files including the app itself to trash
-    pub fn trash_all(&self) -> Result<()> {
-        let mut paths: Vec<PathBuf> = self
+    pub fn trash_all(&self) -> Result<Vec<(PathBuf, String)>> {
+        // get all path in the associate_files field with enumerate
+        let paths: Vec<PathBuf> = self
             .app_data
-            .associate_files
+            .all_found_entries_enumerate()
             .iter()
-            .map(|(path, _label)| path.clone())
+            .map(|(_i, (path, _label))| path.clone())
             .collect();
 
-        // include the app itself
-        paths.push(self.app_data.app.path.clone());
-        // Self::trash_files(&paths)
-        foundation::trash_files_nsfilemanager(&paths)?;
-        Ok(())
+        // delete all associate_files
+        let failed_paths = foundation::trash_files_nsfilemanager(&paths)?;
+
+        Ok(failed_paths)
     }
 
     /// Print a summary of the app data
@@ -158,61 +158,17 @@ impl Cleaner {
         }
 
         println!("\nAssociated files:");
-        for (_i, (path, label)) in &self.app_data.all_found_entries() {
+        for (_i, (path, label)) in &self.app_data.all_found_entries_enumerate() {
             println!("{} -> {}", label, path.display());
         }
     }
 
     pub fn show_in_finder(path: &Path) -> Result<()> {
-        Command::new("open").arg("-R").arg(path).status()?;
-
-        Ok(())
-    }
-
-    /// Move  paths to trash
-    pub fn trash_files(paths: &[PathBuf]) -> Result<()> {
-        if paths.is_empty() {
-            return Ok(());
-        }
-
-        let script = paths
-            .iter()
-            .map(|p| format!("POSIX file \"{}\"", p.display()))
-            .collect::<Vec<_>>()
-            .join(", ");
-
-        let applescript = format!(
-            "tell application \"Finder\" to move {{{}}} to trash",
-            script
-        );
-
-        Command::new("osascript")
-            .arg("-e")
-            .arg(applescript)
-            .status()?;
-
-        Ok(())
+        foundation::show_in_finder(path)
     }
 
     pub fn confirm_kill_dialog(app_name: &str) -> Result<bool> {
-        // AppleScript dialog with Yes/No buttons
-        let script = format!(
-            r#"
-        display dialog "The app '{}' is still running.\nDo you want to kill its running process?\nBe careful to save your work first!" buttons {{"No", "Yes"}} default button "No"
-        if button returned of result is "Yes" then
-            return "YES"
-        else
-            return "NO"
-        end if
-        "#,
-            app_name
-        );
-
-        let output = Command::new("osascript").arg("-e").arg(script).output()?;
-
-        let response = String::from_utf8_lossy(&output.stdout);
-
-        Ok(response.trim() == "YES")
+        foundation::kill_dialog(app_name)
     }
 
     pub fn reset(&mut self) {

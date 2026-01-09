@@ -22,7 +22,7 @@ fn main() {
     debug_dev!("Starting main app in debug mode...");
 
     application(init, update, view)
-        .title("BristApp")
+        .title("Bristo")
         .position(window::Position::Centered)
         .window(window::Settings {
             size: Size::new(600.0, 350.0),

@@ -16,6 +16,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use walkdir::WalkDir;
 
+use crate::helpers::path_contains_ignore_case;
+
 #[derive(Debug, Default, Clone)]
 pub struct AppData {
     pub app: AppInfo,
@@ -43,8 +45,8 @@ impl AppData {
         self.app_process = AppProcess::find_app_processes(&self.app);
     }
 
-    pub fn find_log_bom(&mut self) {
-        self.log = LogReceipt::find_bom_files(&self.app);
+    pub fn find_log_bom(&mut self, locations: &LocationsScan) {
+        self.log = LogReceipt::find_bom_files(&self.app, locations);
     }
 
     // Scan all file associate from list of location
@@ -64,6 +66,7 @@ impl AppData {
             .filter(|base| base.exists())
             .map(|base| {
                 WalkDir::new(base)
+                    .max_depth(3)
                     .into_iter()
                     .filter_map(Result::ok)
                     .filter(|entry| entry.file_type().is_file() || entry.file_type().is_dir())
@@ -71,21 +74,21 @@ impl AppData {
                         let path_buf = entry.path().to_path_buf();
                         let mut matches = Vec::new();
 
-                        if let Some(name) = path_buf.file_name().and_then(|n| n.to_str()) {
-                            let name_lc = name.to_ascii_lowercase();
+                        if path_contains_ignore_case(&path_buf, &self.app.name)
+                            || path_contains_ignore_case(&path_buf, &self.app.bundle_id)
+                            || path_contains_ignore_case(&path_buf, &self.app.bundle_name)
+                            || path_contains_ignore_case(&path_buf, &self.app.organization)
+                        {
+                            matches.push((
+                                path_buf.clone(),
+                                path_buf.file_name().unwrap().to_string_lossy().to_string(),
+                            ));
+                        }
 
-                            if name_lc.contains(&self.app.name.to_ascii_lowercase())
-                                || name_lc.contains(&self.app.bundle_id.to_ascii_lowercase())
-                                || name_lc.contains(&self.app.bundle_name.to_ascii_lowercase())
-                                || name_lc.contains(&self.app.organization.to_ascii_lowercase())
-                            {
-                                matches.push((path_buf.clone(), name.to_string()));
-                            }
-                            // Batched atomic progress every 256 files
-                            let n = counter.fetch_add(1, Ordering::Relaxed) + 1;
-                            if n.is_multiple_of(256) {
-                                progress(n, &path_buf);
-                            }
+                        // Batched atomic progress every 256 files
+                        let n = counter.fetch_add(1, Ordering::Relaxed) + 1;
+                        if n.is_multiple_of(256) {
+                            progress(n, &path_buf);
                         }
 
                         matches.into_iter()
@@ -99,22 +102,35 @@ impl AppData {
 
         // Deduplicate once at the end
         let mut seen = HashSet::new();
-        self.associate_files = results
+
+        let unique_results: Vec<(PathBuf, String)> = results
             .into_iter()
             .filter(|(p, _)| seen.insert(p.clone()))
             .collect();
+
+        // Build the indexed list including the app itself
+        self.set_all_associate_file(unique_results);
+    }
+
+    /// Update associate_files with given list and include app itself
+    fn set_all_associate_file(&mut self, files: Vec<(PathBuf, String)>) {
+        // Start with enumerated files
+        let mut path_asc: Vec<(PathBuf, String)> = files.into_iter().collect();
+
+        // Append the app itself
+        path_asc.push((self.app.path.clone(), self.app.name.clone()));
+
+        self.associate_files = path_asc;
     }
 
     // ===============GUI FOCUS==================
-    pub fn all_found_entries(&self) -> Vec<(usize, (PathBuf, String))> {
-        let mut result: Vec<(usize, (PathBuf, String))> = self
+    pub fn all_found_entries_enumerate(&self) -> Vec<(usize, (PathBuf, String))> {
+        let result: Vec<(usize, (PathBuf, String))> = self
             .associate_files
             .iter()
             .enumerate()
             .map(|(i, (path, label))| (i, (path.clone(), label.clone())))
             .collect();
-
-        result.push((result.len(), (self.app.path.clone(), self.app.name.clone())));
 
         result
     }

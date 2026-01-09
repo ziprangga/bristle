@@ -63,6 +63,15 @@ impl LocationsScan {
 
         Self { paths }
     }
+
+    /// Return only receipts directories
+    pub fn receipts_dirs(&self) -> Vec<PathBuf> {
+        self.paths
+            .iter()
+            .filter(|p| p.ends_with("receipts") || p == &&PathBuf::from("/private/var/db/receipts"))
+            .cloned()
+            .collect()
+    }
 }
 
 impl Default for LocationsScan {

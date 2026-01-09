@@ -59,7 +59,7 @@ pub async fn save_bom_logs_async(cleaner: Cleaner, log_dir: PathBuf) -> Result<(
         .map_err(|e| anyhow::anyhow!("Save bom  logs failed: {}", e))?
 }
 
-pub async fn trash_app_async(cleaner: Cleaner) -> Result<()> {
+pub async fn trash_app_async(cleaner: Cleaner) -> Result<Vec<(PathBuf, String)>> {
     tokio::task::spawn_blocking(move || Cleaner::trash_all(&cleaner))
         .await
         .map_err(|e| anyhow::anyhow!("Move to trash failed: {}", e))?
