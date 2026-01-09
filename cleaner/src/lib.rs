@@ -1,5 +1,7 @@
 mod app_data;
+mod foundation;
 pub use app_data::*;
+pub use foundation::*;
 
 use anyhow::Result;
 use status::StatusEmitter;
@@ -133,7 +135,9 @@ impl Cleaner {
 
         // include the app itself
         paths.push(self.app_data.app.path.clone());
-        Self::trash_files(&paths)
+        // Self::trash_files(&paths)
+        foundation::trash_files_nsfilemanager(&paths)?;
+        Ok(())
     }
 
     /// Print a summary of the app data

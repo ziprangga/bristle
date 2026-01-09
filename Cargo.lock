@@ -530,6 +530,8 @@ dependencies = [
  "anyhow",
  "common-debug",
  "log",
+ "objc2 0.6.3",
+ "objc2-foundation 0.3.2",
  "plist",
  "rayon",
  "status",

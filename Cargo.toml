@@ -28,6 +28,9 @@ iced = { git = "https://github.com/ziprangga/iced.git", features = [
     "wgpu",
     "advanced",
 ] }
+# Foundation Api
+objc2 = "0.6"
+objc2-foundation = "0.3"
 
 
 [profile.release]

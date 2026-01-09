@@ -25,21 +25,25 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
     })
     .view();
 
-    let items = state
-        .cleaner
-        .app_data
-        .all_found_entries()
+    let entries = state.cleaner.app_data.all_found_entries();
+
+    let has_real_items = entries
+        .iter()
+        .any(|(_, (path, _))| !path.as_os_str().is_empty());
+
+    let items = entries
         .into_iter()
         .map(|(i, (path, label))| {
             // ===============
-            let home = std::env::var("HOME").unwrap();
-
-            let display_path = path
-                .strip_prefix(format!("{home}/"))
-                .unwrap_or(&path)
-                .to_string_lossy();
-
-            let display_path = format!("~/{display_path}");
+            let display_path = if let Ok(home) = std::env::var("HOME") {
+                if let Ok(stripped) = path.strip_prefix(&home) {
+                    format!("~/{}", stripped.to_string_lossy())
+                } else {
+                    path.to_string_lossy().to_string()
+                }
+            } else {
+                path.to_string_lossy().to_string()
+            };
 
             // ===============
             RowContent::Widget(WidgetContent::new(move |_selected| {
@@ -102,7 +106,7 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
         })
         .view();
 
-    let center_view = if state.cleaner.app_data.associate_files.is_empty() {
+    let center_view = if !has_real_items {
         drop_zone
     } else {
         list_view

@@ -12,3 +12,5 @@ plist = { workspace = true }
 walkdir = { workspace = true }
 rayon = { workspace = true }
 sysinfo = { workspace = true }
+objc2 = { workspace = true }
+objc2-foundation = { workspace = true }
