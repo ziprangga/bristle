@@ -19,7 +19,7 @@ pub enum AppMessage {
     ExportFile,
 
     TrashApp,
-    DeletedApp,
+    DeletedApp(Result<String, String>),
     ClearList,
     Status(StatusMessage),
 

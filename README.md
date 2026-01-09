@@ -25,10 +25,11 @@ To perform cleanup app effectively, **BristApp** requires specific permissions w
 
 BristApp interacts with Finder to:
 
-- 🗑️ **Move selected files or folders to the Trash.**
+**This permission is required.**
 
-**This permission is required.**  
-Without this permission, BristApp cannot move files or folders to the Trash.
+- Without this permission, BristApp cannot show files or folders in the finder.
+- Without this permission, BristApp cannot kill process if application that need remove still running.
+  This permission can be skipped but maybe that function will be failed and need to do manually.
 
 **How to Grant Finder Access:**
 
@@ -36,27 +37,21 @@ Without this permission, BristApp cannot move files or folders to the Trash.
 2. Ensure **BristApp** is allowed to control Finder.
 3. Restart the application after granting this permission.
 
----
+### Access to Full Disk (Full Disk Access Permission)
 
-### Why These Permissions Are Needed
+BristApp interacts with **~/Library/Container** where this protected by TCC in Mac System,
 
-Permissions are strictly used for:
+**This permission is required.**  
+Without this permission, BristApp cannot move files or folders inside **~/Library/Container** to the Trash.
+This permission can be skipped but for folder or file inside **~/Library/Container** need to delete manually.
 
-- **Locating and displaying file paths** related to an application.
-- Allowing you to **open file locations** directly in Finder.
-- Securely **moving files or folders to the Trash**.
+**How to Grant Full Disk Access:**
 
-**No files will be deleted automatically** — all actions require user confirmation.
+1. Go to **System Preferences → Security & Privacy → Privacy → Full Disk Access**.
+2. Ensure **BristApp** in the list and enabled.
+3. Restart the application after granting this permission.
 
----
-
-### Troubleshooting Permissions
-
-If you encounter issues (e.g., files not moving to Trash), follow these steps:
-
-1. Open **System Preferences → Security & Privacy → Privacy**.
-2. Under **Automation**, ensure **BristApp** has permission to control Finder.
-3. Restart BristApp after granting the required permissions.
+#### Inspect the code for more information and to know what the code doing and trigger Permission and Privacy.
 
 ---
 

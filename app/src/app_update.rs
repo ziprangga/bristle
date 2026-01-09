@@ -158,19 +158,25 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
         AppMessage::TrashApp => {
             let cleaner = state.cleaner.clone();
             Task::perform(trash_app_async(cleaner), |res| match res {
-                Ok(()) => AppMessage::DeletedApp,
-                Err(err) => {
-                    let event = StatusEvent::new()
-                        .with_stage("Failed")
-                        .with_message(err.to_string());
-                    AppMessage::Status(StatusMessage::Event(event))
-                }
+                Ok(()) => AppMessage::DeletedApp(Ok("App moved to Trash".to_string())),
+                Err(err) => AppMessage::DeletedApp(Err(err.to_string())),
             })
         }
 
-        AppMessage::DeletedApp => {
-            state.reset();
-            state.status.message = Some("App moved to Trash".to_string());
+        AppMessage::DeletedApp(result) => {
+            match result {
+                Ok(msg) => {
+                    state.reset();
+                    state.status.message = Some(msg);
+                }
+                Err(err_msg) => {
+                    let event = StatusEvent::new()
+                        .with_stage("Failed")
+                        .with_message(err_msg.to_string());
+                    // AppMessage::Status(StatusMessage::Event(event));
+                    let _ = state.status.update(StatusMessage::Event(event));
+                }
+            }
             Task::none()
         }
 
