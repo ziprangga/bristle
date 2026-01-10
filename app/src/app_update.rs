@@ -36,7 +36,7 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
                         Ok(cleaner) => AppMessage::ConfirmKill(Ok(cleaner)),
                         Err(err) => {
                             let event = StatusEvent::new()
-                                .with_stage("Failed")
+                                .with_stage("Failed:")
                                 .with_message(err.to_string());
                             AppMessage::Status(StatusMessage::Event(event))
                         }
@@ -52,15 +52,13 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
             Task::batch(vec![add_app, status_task])
         }
 
-        AppMessage::OpenFile => {
+        AppMessage::InputFile => {
             state.reset();
 
             Task::perform(set_input_path(), |res| match res {
                 Ok(path) => AppMessage::DropFile(path.to_path_buf()),
                 Err(e) => {
-                    let event = StatusEvent::new()
-                        .with_stage("Failed")
-                        .with_message(e.to_string());
+                    let event = StatusEvent::new().with_message(e.to_string());
                     AppMessage::Status(StatusMessage::Event(event))
                 }
             })
@@ -74,8 +72,8 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
                         Ok(v) => v,
                         Err(e) => {
                             let event = StatusEvent::new()
-                                .with_stage("Failed")
-                                .with_message(format!("Failed to show dialog: {}", e));
+                                .with_stage("Failed:")
+                                .with_message(format!("Display dialog error \"{}\"", e));
                             return Task::done(AppMessage::Status(StatusMessage::Event(event)));
                         }
                     };
@@ -121,7 +119,7 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
                         Ok(cleaner) => AppMessage::UpdateCleaner(cleaner),
                         Err(err) => {
                             let event = StatusEvent::new()
-                                .with_stage("Failed")
+                                .with_stage("Failed:")
                                 .with_message(err.to_string());
                             AppMessage::Status(StatusMessage::Event(event))
                         }
@@ -193,13 +191,13 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
             Task::perform(save_bom_logs_async(cleaner, output_dir), |res| match res {
                 Ok(()) => {
                     let event = StatusEvent::new()
-                        .with_stage("Success")
+                        .with_stage("Success:")
                         .with_message("Bom file saved".to_string());
                     AppMessage::Status(StatusMessage::Event(event))
                 }
                 Err(err) => {
                     let event = StatusEvent::new()
-                        .with_stage("Failed")
+                        .with_stage("Failed:")
                         .with_message(err.to_string());
                     AppMessage::Status(StatusMessage::Event(event))
                 }

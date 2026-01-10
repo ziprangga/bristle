@@ -8,7 +8,7 @@ use cleaner::Cleaner;
 #[derive(Debug, Clone)]
 pub enum AppMessage {
     DropFile(PathBuf),
-    OpenFile,
+    InputFile,
     ScanApp(Result<Cleaner, String>),
 
     ConfirmKill(Result<Cleaner, String>),

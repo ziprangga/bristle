@@ -20,7 +20,7 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
             .height(Length::Fixed(200.0))
             .width(Length::Fixed(200.0))
             .style(blank_border_style)
-            .on_press(AppMessage::OpenFile)
+            .on_press(AppMessage::InputFile)
             .view()
     })
     .view();
