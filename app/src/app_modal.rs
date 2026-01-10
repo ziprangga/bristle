@@ -1,3 +1,5 @@
+// Design modal not yet implementation
+// still using spawn osascript for help to Mac native dialog
 use anyhow::Result;
 use std::process::Command;
 
