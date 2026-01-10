@@ -74,20 +74,22 @@ impl AppProcess {
             .collect()
     }
 
-    pub fn kill_app_processes(app_name: &str, processes: &[AppProcess]) -> Result<()> {
+    pub fn kill_app_processes(app_name: &str, processes: &[AppProcess]) -> Result<usize> {
         if processes.is_empty() {
             println!("No running processes found for {}", app_name);
-            return Ok(());
+            return Ok(0);
         }
 
-        let pids = processes
-            .iter()
-            .map(|p| p.pid.to_string())
-            .collect::<Vec<_>>()
-            .join(" ");
+        let mut killed_count = 0;
 
-        kill_pids(&pids)?;
+        for p in processes {
+            if kill_pids(&p.pid.to_string()).is_ok() {
+                killed_count += 1;
+            } else {
+                eprintln!("Failed to kill PID {} for {}", p.pid, app_name);
+            }
+        }
 
-        Ok(())
+        Ok(killed_count)
     }
 }

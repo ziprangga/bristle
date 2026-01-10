@@ -1,3 +1,4 @@
+mod app_modal;
 mod app_state;
 mod app_status;
 mod app_task;

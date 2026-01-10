@@ -13,29 +13,6 @@ pub struct LogReceipt {
 impl LogReceipt {
     /// Find BOM files for the given app
     pub fn find_bom_files(app: &AppInfo, locations: &LocationsScan) -> Self {
-        // let receipts_dir = Path::new("/private/var/db/receipts");
-        // let bom_files = if receipts_dir.exists() {
-        //     std::fs::read_dir(receipts_dir)
-        //         .unwrap()
-        //         .filter_map(|e| e.ok())
-        //         .map(|e| e.path())
-        //         .filter(|p| {
-        //             p.extension().map(|ext| ext == "bom").unwrap_or(false)
-        //                 && p.file_name()
-        //                     .and_then(|n| n.to_str())
-        //                     .map(|n| {
-        //                         n.contains(&app.bundle_name)
-        //                             || n.contains(&app.bundle_id)
-        //                             || n.contains(&app.name)
-        //                             || n.contains(&app.organization)
-        //                     })
-        //                     .unwrap_or(false)
-        //         })
-        //         .collect()
-        // } else {
-        //     Vec::new()
-        // };
-
         let mut bom_files = Vec::new();
         for dir in locations.receipts_dirs() {
             if let Ok(entries) = std::fs::read_dir(&dir) {

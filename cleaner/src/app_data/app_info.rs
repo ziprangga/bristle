@@ -63,10 +63,6 @@ impl AppInfo {
     }
 
     pub fn path_matches(&self, path: &Path) -> bool {
-        // path_contains_ignore_case(path, &app.name)
-        //     || path_contains_ignore_case(path, &app.bundle_id)
-        //     || path_contains_ignore_case(path, &app.bundle_name)
-        //     || path_contains_ignore_case(path, &app.organization)
         path_equals_ignore_case(path, &self.name)
             || path_equals_ignore_case(path, &self.bundle_name)
             || path_equals_ignore_case(path, &self.organization)

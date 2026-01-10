@@ -41,44 +41,22 @@ impl Cleaner {
                 .emit();
         }
 
-        // // If any processes found, show confirmation dialog
-        // if !app_data.app_process.is_empty() {
-        //     let user_confirmed = foundation::modal_kill_dialog(&app_data.app.name)?;
-
-        //     if user_confirmed {
-        //         // User chose Yes → kill processes
-        //         AppProcess::kill_app_processes(&app_data.app.name, &app_data.app_process)?;
-
-        //         if let Some(s) = status {
-        //             s.with_stage("Completed")
-        //                 .with_message("All processes killed")
-        //                 .with_total(total_process)
-        //                 .emit();
-        //         }
-        //     }
-        // }
-
         Ok(Self { app_data })
     }
 
-    pub fn confirm_and_kill_process(&self, status: Option<&StatusEmitter>) -> Result<()> {
+    pub fn kill_app_process(&self, status: Option<&StatusEmitter>) -> Result<()> {
         if self.app_data.app_process.is_empty() {
             return Ok(());
         }
 
-        let user_confirmed = foundation::modal_kill_dialog(&self.app_data.app.name)?;
-
-        if user_confirmed {
-            let total_process = self.app_data.app_process.len();
-            // User chose Yes → kill processes
+        let killed_count =
             AppProcess::kill_app_processes(&self.app_data.app.name, &self.app_data.app_process)?;
 
-            if let Some(s) = status {
-                s.with_stage("Completed")
-                    .with_message("All processes killed")
-                    .with_total(total_process)
-                    .emit();
-            }
+        if let Some(s) = status {
+            s.with_stage("Completed")
+                .with_message("All processes killed")
+                .with_total(killed_count)
+                .emit();
         }
 
         Ok(())
@@ -188,12 +166,6 @@ impl Cleaner {
     pub fn show_in_finder(path: &Path) -> Result<()> {
         foundation::show_in_finder(path)
     }
-
-    // fn confirm_kill_dialog(app_name: &str) -> Result<bool> {
-    //     // let confirmation = foundation::kill_dialog(app_name);
-    //     // Ok(confirmation)
-    //     foundation::modal_kill_dialog(app_name)
-    // }
 
     pub fn reset(&mut self) {
         self.app_data.reset();
