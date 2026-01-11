@@ -1,8 +1,6 @@
 // -------------------------------
 // Debug-only Logger Init
 // -------------------------------
-// #[cfg(debug_assertions)]
-// #[cfg(feature = "debug-dev")]
 #[cfg(all(debug_assertions, feature = "debug-dev"))]
 pub fn init_dev_logger() {
     // Initialize logger; ignore errors if already initialized
@@ -22,10 +20,12 @@ pub fn init_dev_logger() {
 // -------------------------------
 // Debug-only macro
 // -------------------------------
+
 #[macro_export]
 macro_rules! debug_dev {
     ($($arg:tt)*) => {
         #[cfg(debug_assertions)]
+        // #[cfg(all(debug_assertions, feature = "debug-dev"))]
         {
             log::debug!($($arg)*);
         }

@@ -25,7 +25,7 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
     })
     .view();
 
-    let entries = state.cleaner.app_data.all_found_entries_enumerate();
+    let entries = state.cleaner.app_data.all_associate_entries_enumerate();
 
     let has_real_items = entries
         .iter()

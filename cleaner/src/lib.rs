@@ -121,7 +121,7 @@ impl Cleaner {
         debug_dev!("Creating folder: {}", app_log_folder.display());
 
         // Call the LogReceipt function
-        self.app_data.log.save_bom_log(&app_log_folder)
+        self.app_data.save_bom_log_app(&app_log_folder)
     }
 
     /// Move all associated files including the app itself to trash
@@ -129,7 +129,7 @@ impl Cleaner {
         // get all path in the associate_files field with enumerate
         let paths: Vec<PathBuf> = self
             .app_data
-            .all_found_entries_enumerate()
+            .all_associate_entries_enumerate()
             .iter()
             .map(|(_i, (path, _label))| path.clone())
             .collect();
@@ -158,7 +158,7 @@ impl Cleaner {
         }
 
         println!("\nAssociated files:");
-        for (_i, (path, label)) in &self.app_data.all_found_entries_enumerate() {
+        for (_i, (path, label)) in &self.app_data.all_associate_entries_enumerate() {
             println!("{} -> {}", label, path.display());
         }
     }

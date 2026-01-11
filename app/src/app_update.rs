@@ -139,7 +139,11 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
 
         AppMessage::UpdateCleaner(cleaner) => {
             state.cleaner = cleaner;
-            let founded = state.cleaner.app_data.all_found_entries_enumerate().len();
+            let founded = state
+                .cleaner
+                .app_data
+                .all_associate_entries_enumerate()
+                .len();
             let event = StatusEvent::new()
                 .with_stage("Completed:")
                 .with_message(format!("{} item founded", founded));
@@ -150,7 +154,7 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
             state.selected_file = Some(index);
             debug_dev!("Clicked path: {:?}", index);
 
-            let entries = state.cleaner.app_data.all_found_entries_enumerate();
+            let entries = state.cleaner.app_data.all_associate_entries_enumerate();
 
             if let Some((_i, (path, _label))) = entries.get(index) {
                 let path = path.clone();

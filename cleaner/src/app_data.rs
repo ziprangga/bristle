@@ -16,6 +16,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use walkdir::WalkDir;
 
+#[cfg(debug_assertions)]
 use common_debug::debug_dev;
 
 #[derive(Debug, Default, Clone)]
@@ -45,6 +46,7 @@ impl AppData {
         self.app_process = AppProcess::find_app_processes(&self.app);
 
         // debug list of the app process
+        #[cfg(debug_assertions)]
         for _p in &self.app_process {
             debug_dev!(
                 "list of process app: PID {}: cmd_line = '{}' name = '{}'",
@@ -129,8 +131,8 @@ impl AppData {
         self.associate_files = path_asc;
     }
 
-    // ===============GUI FOCUS==================
-    pub fn all_found_entries_enumerate(&self) -> Vec<(usize, (PathBuf, String))> {
+    // ===============All Associate file with enumerate==================
+    pub fn all_associate_entries_enumerate(&self) -> Vec<(usize, (PathBuf, String))> {
         let result: Vec<(usize, (PathBuf, String))> = self
             .associate_files
             .iter()
@@ -139,6 +141,15 @@ impl AppData {
             .collect();
 
         result
+    }
+
+    // =======Save All Bom Log that was founded==============
+    pub fn save_bom_log_app(&self, log_dir: &Path) -> Result<()> {
+        if self.log.bom_file.is_empty() {
+            anyhow::bail!("No BOM files found for app: {}", self.app.name);
+        }
+
+        self.log.save_bom_log(log_dir)
     }
 
     pub fn reset(&mut self) {
