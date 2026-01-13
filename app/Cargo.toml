@@ -23,6 +23,11 @@ futures = { workspace = true }
 iced = { workspace = true }
 
 # ====================
+# objc2 = { workspace = true }
+# objc2-foundation = { workspace = true }
+# objc2-app-kit = { workspace = true }
+
+# ====================
 [package.metadata.bundle.bin.Bristo]
 name = "Bristo"
 identifier = "com.ziprangga.Bristo"

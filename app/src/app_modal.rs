@@ -24,75 +24,38 @@ pub fn modal_process_kill_dialog(app_name: &str) -> Result<bool> {
     Ok(response.trim() == "YES")
 }
 
-// use iced::{
-//     Element, alignment,
-//     widget::{button, center, column, container, mouse_area, opaque, row, space, stack, text},
-// };
+// use anyhow::Result;
+// use objc2::rc::autoreleasepool;
+// use objc2::{class, msg_send};
+// use objc2_app_kit::NSAlert;
+// use objc2_foundation::NSString;
 
-// #[derive(Debug, Clone)]
-// pub enum KillModalMessage {
-//     Open { app_name: String },
-//     Yes,
-//     No,
-//     Close,
-// }
+// pub fn modal_process_kill_dialog(app_name: &str) -> Result<bool> {
+//     autoreleasepool(|_| unsafe {
+//         // NSAlert *alert = [[NSAlert alloc] init];
+//         let alert: *mut NSAlert = msg_send![class!(NSAlert), alloc];
+//         let alert: *mut NSAlert = msg_send![alert, init];
 
-// #[derive(Default, Clone)]
-// pub struct KillModal {
-//     pub visible: bool,
-//     pub app_name: String,
-// }
+//         // NSStrings
+//         let message = NSString::from_str(&format!("The app '{}' is still running.", app_name));
+//         let info = NSString::from_str(
+//             "Do you want to kill its running process?\nBe careful to save your work first!",
+//         );
 
-// impl KillModal {
-//     pub fn update(&mut self, msg: &KillModalMessage) -> Option<bool> {
-//         match msg {
-//             KillModalMessage::Open { app_name } => {
-//                 self.app_name = app_name.clone();
-//                 self.visible = true;
-//                 None
-//             }
+//         // Set texts
+//         let _: () = msg_send![alert, setMessageText: &*message];
+//         let _: () = msg_send![alert, setInformativeText: &*info];
 
-//             KillModalMessage::Yes => {
-//                 self.visible = false;
-//                 Some(true)
-//             }
+//         let yes = NSString::from_str("Yes");
+//         let no = NSString::from_str("No");
 
-//             KillModalMessage::No | KillModalMessage::Close => {
-//                 self.visible = false;
-//                 Some(false)
-//             }
-//         }
-//     }
+//         let _: () = msg_send![alert, addButtonWithTitle: &*yes];
+//         let _: () = msg_send![alert, addButtonWithTitle: &*no];
 
-//     pub fn view<'a>(&self) -> Element<'a, KillModalMessage> {
-//         let dialog = container(
-//             column![
-//                 text("Application Still Running")
-//                     .size(20)
-//                     .align_x(alignment::Horizontal::Center),
-//                 space::vertical(),
-//                 text(format!(
-//                     "The app \"{}\" is still running.\n\
-//                          Do you want to kill its running process?\n\
-//                          Be sure to save your work first.",
-//                     self.app_name
-//                 )),
-//                 space::vertical(),
-//                 row![
-//                     button("No").on_press(KillModalMessage::No),
-//                     space::horizontal(),
-//                     button("Yes").on_press(KillModalMessage::Yes),
-//                 ]
-//             ]
-//             .spacing(10),
-//         )
-//         .padding(20)
-//         .width(420)
-//         .style(container::rounded_box);
+//         // Run modal
+//         let response: isize = msg_send![alert, runModal];
 
-//         stack![opaque(
-//             mouse_area(center(opaque(dialog))).on_press(KillModalMessage::Close)
-//         )]
-//         .into()
-//     }
+//         // NSAlertFirstButtonReturn == 1000
+//         Ok(response == 1000)
+//     })
 // }

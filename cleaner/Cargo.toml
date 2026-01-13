@@ -18,7 +18,5 @@ sysinfo = { workspace = true }
 unicode-normalization = { workspace = true }
 objc2 = { workspace = true }
 objc2-foundation = { workspace = true }
-libc = { workspace = true }
 objc2-app-kit = { workspace = true }
-rustix = { workspace = true }
-nix = { workspace = true }
+libc = { workspace = true }

@@ -21,17 +21,17 @@ On top of that, this project also serves as a way for me to dive deeper into Rus
 
 To perform cleanup app effectively, **Bristo** requires specific permissions when running on macOS. Below is a detailed explanation:
 
-### Access to Finder (Automation Permission)
+### Access Data from other Application (Automation Permission)
 
-Bristo interacts with Finder to:
+Bristo interacts with automation like "osascript" or "command (lsbom)" to do some job like get bom log and ask user it truly need to kill process from app that want to remove.
 
 **This permission is required.**
 
-- Without this permission, Bristo cannot show files or folders in the finder.
-- Without this permission, Bristo cannot kill process if application that need remove still running.
-  This permission can be skipped but maybe that function will be failed and need to do manually.
+- Without this permission, Bristo cannot do some automation.
+  This permission can be skipped but some function that need it maybe will fail and need to do manually.
+  **will be improve in the future so this permission not needed**
 
-**How to Grant Finder Access:**
+**How to Grant Access:**
 
 1. Go to **System Preferences → Security & Privacy → Privacy → Automation**.
 2. Ensure **Bristo** is allowed to control Finder.
@@ -39,11 +39,13 @@ Bristo interacts with Finder to:
 
 ### Access to Full Disk (Full Disk Access Permission)
 
-Bristo interacts with **~/Library/Container** where this protected by TCC in Mac System,
+Bristo interacts with many location **like** **~/Library/Containe** where this protected by TCC in Mac System,
+
+location scan can be inspect in the code.
 
 **This permission is required.**  
-Without this permission, Bristo cannot move files or folders inside **~/Library/Container** to the Trash.
-This permission can be skipped but for folder or file inside **~/Library/Container** need to delete manually.
+Without this permission, Bristo cannot move files or folders inside **~/Library/Containe** to the Trash.
+This permission can be skipped but for folder or file inside **~/Library/Containe** that need access using this permission, need delete manually.
 
 **How to Grant Full Disk Access:**
 
