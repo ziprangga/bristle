@@ -16,6 +16,8 @@ walkdir = { workspace = true }
 rayon = { workspace = true }
 sysinfo = { workspace = true }
 unicode-normalization = { workspace = true }
+
+# ==============
 objc2 = { workspace = true }
 objc2-foundation = { workspace = true }
 objc2-app-kit = { workspace = true }
