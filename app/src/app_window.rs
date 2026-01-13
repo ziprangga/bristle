@@ -1,4 +1,5 @@
 use iced::widget::Column;
+use iced::widget::Stack;
 use iced::{
     Background, Border, Color, Padding, alignment,
     widget::{Container, Row, Text, container, row, text},
@@ -255,6 +256,12 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
     .align_x(alignment::Horizontal::Center)
     .align_y(alignment::Vertical::Center);
 
+    // ==================== modal view ====================
+    let modal = state
+        .show_modal_ask
+        .view()
+        .map(|e| e.map(AppMessage::ModalAsk));
+
     // ====================main layout========================
     let top = Container::new(
         Row::new()
@@ -301,7 +308,7 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
         right: 12.0,
     });
 
-    Column::new()
+    let content: Element<_> = Column::new()
         .push(top)
         .push(center)
         .push(bottom)
@@ -309,5 +316,12 @@ pub fn view(state: &AppState) -> Element<'_, AppMessage> {
         .height(Length::Fill)
         .spacing(10)
         .padding(10)
-        .into()
+        .into();
+
+    // ==================== stack with modal ====================
+    if let Some(modal) = modal {
+        Stack::new().push(content).push(modal).into()
+    } else {
+        content
+    }
 }

@@ -10,7 +10,8 @@ use common_debug::debug_dev;
 use status::setup_status_emitter;
 use status::status_event::StatusEvent;
 
-use crate::app_modal::modal_process_kill_dialog;
+// use crate::app_modal::modal_process_kill_dialog;
+use crate::app_modal::ModalAskMessage;
 use crate::app_state::{AppMessage, AppState};
 use crate::app_status::StatusMessage;
 use crate::app_task::kill_app_process_async;
@@ -67,41 +68,14 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
         AppMessage::ConfirmKill(result) => {
             if let Ok(cleaner) = result {
                 if !cleaner.app_data.app_process.is_empty() {
-                    let user_confirmed = match modal_process_kill_dialog(&cleaner.app_data.app.name)
-                    {
-                        Ok(v) => v,
-                        Err(e) => {
-                            let event = StatusEvent::new()
-                                .with_stage("Failed:")
-                                .with_message(format!("Display dialog error \"{}\"", e));
-                            return Task::done(AppMessage::Status(StatusMessage::Event(event)));
-                        }
-                    };
+                    state.pending_cleaner = Some(cleaner);
 
-                    if user_confirmed {
-                        let (reporter, rx) = setup_status_emitter(10);
-                        let cleaner = Arc::new(cleaner);
-
-                        let confirm_task = Task::perform(
-                            kill_app_process_async(cleaner.clone(), Some(reporter)),
-                            move |res| match res {
-                                Ok(()) => AppMessage::ScanApp(Ok(
-                                    Arc::try_unwrap(cleaner).unwrap_or_else(|c| (*c).clone())
-                                )),
-                                Err(err) => AppMessage::ScanApp(Err(err.to_string())),
-                            },
-                        );
-
-                        let rx_stream = ReceiverStream::new(rx);
-                        let status_task = Task::run(
-                            rx_stream.map(|event| AppMessage::Status(StatusMessage::Event(event))),
-                            |msg| msg,
-                        );
-
-                        Task::batch(vec![confirm_task, status_task])
-                    } else {
-                        Task::done(AppMessage::ScanApp(Ok(cleaner)))
-                    }
+                    // Set the modal message and show it
+                    state.show_modal_ask.set_message(format!(
+                        "The app '{}' is still running.\nDo you want to kill its running process?",
+                        state.pending_cleaner.as_ref().unwrap().app_data.app.name
+                    ));
+                    Task::none()
                 } else {
                     Task::done(AppMessage::ScanApp(Ok(cleaner)))
                 }
@@ -109,6 +83,40 @@ pub fn update(state: &mut AppState, message: AppMessage) -> Task<AppMessage> {
                 Task::none()
             }
         }
+
+        AppMessage::ModalAsk(msg) => match msg {
+            ModalAskMessage::ConfirmMsg(answer) => {
+                state
+                    .show_modal_ask
+                    .update(ModalAskMessage::ConfirmMsg(answer));
+
+                let cleaner = state.pending_cleaner.take().unwrap();
+                if !answer {
+                    return Task::done(AppMessage::ScanApp(Ok(cleaner)));
+                }
+
+                let (reporter, rx) = setup_status_emitter(10);
+                let cleaner_arc = Arc::new(cleaner);
+
+                let confirm_task = Task::perform(
+                    kill_app_process_async(cleaner_arc.clone(), Some(reporter)),
+                    move |res| match res {
+                        Ok(()) => AppMessage::ScanApp(Ok(
+                            Arc::try_unwrap(cleaner_arc).unwrap_or_else(|c| (*c).clone())
+                        )),
+                        Err(err) => AppMessage::ScanApp(Err(err.to_string())),
+                    },
+                );
+
+                let status_task = Task::run(
+                    ReceiverStream::new(rx)
+                        .map(|event| AppMessage::Status(StatusMessage::Event(event))),
+                    |msg| msg,
+                );
+
+                Task::batch(vec![confirm_task, status_task])
+            }
+        },
 
         AppMessage::ScanApp(cleaner) => {
             if let Ok(app_input) = cleaner {

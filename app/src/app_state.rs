@@ -2,10 +2,8 @@ use anyhow::Result;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use crate::{
-
-    app_status::{Status, StatusMessage},
-};
+use crate::app_modal::{ModalAsk, ModalAskMessage};
+use crate::app_status::{Status, StatusMessage};
 use cleaner::Cleaner;
 
 #[derive(Debug, Clone)]
@@ -14,8 +12,8 @@ pub enum AppMessage {
     InputFile,
     ScanApp(Result<Cleaner, String>),
 
+    ModalAsk(ModalAskMessage),
     ConfirmKill(Result<Cleaner, String>),
-    // ConfirmKillDecisision(Result<Cleaner, String>, bool),
 
     UpdateCleaner(Cleaner),
     OpenSelectedPath(usize),
@@ -40,8 +38,8 @@ pub struct AppState {
 
     pub cleaner: Cleaner,
     pub selected_file: Option<usize>,
-
-    // pub kill_modal: KillModal,
+    pub show_modal_ask: ModalAsk,
+    pub pending_cleaner: Option<Cleaner>,
 }
 
 impl AppState {
@@ -57,7 +55,8 @@ impl AppState {
         let cleaner = Cleaner::default();
         let selected_file = None;
 
-        // let kill_modal = KillModal::default();
+        let show_modal_ask = ModalAsk::default();
+        let pending_cleaner = None;
 
         Self {
             input_file,
@@ -65,7 +64,8 @@ impl AppState {
             status,
             cleaner,
             selected_file,
-            // kill_modal,
+            show_modal_ask,
+            pending_cleaner,
         }
     }
 

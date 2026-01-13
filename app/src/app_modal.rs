@@ -1,61 +1,88 @@
-// Design modal not yet implementation
-// still using spawn osascript for help to Mac native dialog
-use anyhow::Result;
-use std::process::Command;
+use iced::Element;
+use iced::widget::{Column, Container, Row, Text};
+use iced::{Color, Length, alignment};
 
-pub fn modal_process_kill_dialog(app_name: &str) -> Result<bool> {
-    // AppleScript dialog with Yes/No buttons
-    let script = format!(
-        r#"
-        display dialog "The app '{}' is still running.\nDo you want to kill its running process?\nBe careful to save your work first!" buttons {{"No", "Yes"}} default button "No"
-        if button returned of result is "Yes" then
-            return "YES"
-        else
-            return "NO"
-        end if
-        "#,
-        app_name
-    );
+use widget::button_style::{CustomButton, blank_border_style, danger_style};
 
-    let output = Command::new("osascript").arg("-e").arg(script).output()?;
-
-    let response = String::from_utf8_lossy(&output.stdout);
-
-    Ok(response.trim() == "YES")
+#[derive(Clone, Default)]
+pub struct ModalAsk {
+    pub show_modal: bool,
+    pub message: String,
 }
 
-// use anyhow::Result;
-// use objc2::rc::autoreleasepool;
-// use objc2::{class, msg_send};
-// use objc2_app_kit::NSAlert;
-// use objc2_foundation::NSString;
+#[derive(Debug, Clone)]
+pub enum ModalAskMessage {
+    ConfirmMsg(bool),
+}
 
-// pub fn modal_process_kill_dialog(app_name: &str) -> Result<bool> {
-//     autoreleasepool(|_| unsafe {
-//         // NSAlert *alert = [[NSAlert alloc] init];
-//         let alert: *mut NSAlert = msg_send![class!(NSAlert), alloc];
-//         let alert: *mut NSAlert = msg_send![alert, init];
+impl ModalAsk {
+    /// Sets the modal message and shows it
+    pub fn set_message(&mut self, msg: impl Into<String>) {
+        self.message = msg.into();
+        self.show_modal = true;
+    }
 
-//         // NSStrings
-//         let message = NSString::from_str(&format!("The app '{}' is still running.", app_name));
-//         let info = NSString::from_str(
-//             "Do you want to kill its running process?\nBe careful to save your work first!",
-//         );
+    /// Hides the modal
+    pub fn hide(&mut self) {
+        self.show_modal = false;
+        self.message.clear();
+    }
 
-//         // Set texts
-//         let _: () = msg_send![alert, setMessageText: &*message];
-//         let _: () = msg_send![alert, setInformativeText: &*info];
+    /// Updates based on the user answer
+    pub fn update(&mut self, msg: ModalAskMessage) -> Option<bool> {
+        match msg {
+            ModalAskMessage::ConfirmMsg(answer) => {
+                self.hide();
+                Some(answer)
+            }
+        }
+    }
 
-//         let yes = NSString::from_str("Yes");
-//         let no = NSString::from_str("No");
+    pub fn view(&self) -> Option<Element<'_, ModalAskMessage>> {
+        if !self.show_modal {
+            return None;
+        }
 
-//         let _: () = msg_send![alert, addButtonWithTitle: &*yes];
-//         let _: () = msg_send![alert, addButtonWithTitle: &*no];
+        Some({
+            // modal text
+            let modal_text = Text::new(&self.message)
+                .size(14)
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Center);
 
-//         // Run modal
-//         let response: isize = msg_send![alert, runModal];
+            // Yes button
+            let yes_btn = CustomButton::new("Yes")
+                .text_size(12)
+                .width(Length::Fill)
+                .on_press(ModalAskMessage::ConfirmMsg(true))
+                .style(blank_border_style)
+                .view();
 
-//         // NSAlertFirstButtonReturn == 1000
-//         Ok(response == 1000)
-//     })
-// }
+            // No button
+            let no_btn = CustomButton::new("No")
+                .text_size(12)
+                .width(Length::Fill)
+                .on_press(ModalAskMessage::ConfirmMsg(false))
+                .style(danger_style)
+                .view();
+
+            // buttons row
+            let buttons_row = Row::new().spacing(10).push(yes_btn).push(no_btn);
+
+            // modal content column
+            let modal_column = Column::new().spacing(12).push(modal_text).push(buttons_row);
+
+            // full modal container
+            Container::new(modal_column)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .align_x(alignment::Horizontal::Center)
+                .align_y(alignment::Vertical::Center)
+                .style(|_| iced::widget::container::Style {
+                    background: Some(iced::Background::Color(Color::from_rgba8(0, 0, 0, 120.0))),
+                    ..Default::default()
+                })
+                .into()
+        })
+    }
+}
