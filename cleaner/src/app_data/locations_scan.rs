@@ -1,8 +1,8 @@
 use std::env;
 use std::path::PathBuf;
 // =======
-use crate::foundation::sysconf_path;
-use crate::foundation::{DARWIN_USER_CACHE_DIR, DARWIN_USER_TEMP_DIR};
+use crate::syscom::sysconf_path;
+use crate::syscom::{DARWIN_USER_CACHE_DIR, DARWIN_USER_TEMP_DIR};
 
 #[derive(Debug, Clone)]
 pub struct LocationsScan {

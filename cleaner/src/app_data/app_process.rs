@@ -4,7 +4,7 @@ use std::ffi::OsString;
 use sysinfo::{ProcessesToUpdate, System};
 
 use crate::AppInfo;
-use crate::foundation::kill_pids;
+use crate::syscom::kill_pids;
 use common_debug::debug_dev;
 
 #[derive(Debug, Clone)]

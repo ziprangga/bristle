@@ -8,10 +8,12 @@ name = "Bristo"
 path = "src/main.rs"
 
 [dependencies]
-common-debug = { path = "../common-debug" }
-widget = { path = "../widget" }
-status = { path = "../status" }
-cleaner = { path = "../cleaner" }
+common-debug = { workspace = true }
+widget = { workspace = true }
+status = { workspace = true }
+cleaner = { workspace = true }
+
+# ====================
 log = { workspace = true }
 anyhow = { workspace = true }
 rfd = { workspace = true }
@@ -19,11 +21,8 @@ tokio = { workspace = true }
 tokio-stream = { workspace = true }
 futures = { workspace = true }
 iced = { workspace = true }
-objc2 = { workspace = true }
-objc2-foundation = { workspace = true }
-objc2-app-kit = { workspace = true }
 
-
+# ====================
 [package.metadata.bundle.bin.Bristo]
 name = "Bristo"
 identifier = "com.ziprangga.Bristo"

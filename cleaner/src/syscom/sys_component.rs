@@ -1,14 +1,65 @@
 use anyhow::Result;
 use anyhow::anyhow;
+use std::ffi::CStr;
 use std::path::Path;
 use std::path::PathBuf;
-// use std::process::Command;
 // ============
 use objc2::rc::Retained;
 use objc2::{ClassType, msg_send};
 use objc2_app_kit::NSWorkspace;
 use objc2_foundation::NSArray;
 use objc2_foundation::{NSError, NSFileManager, NSString, NSURL};
+// ============
+use libc::confstr;
+use libc::{SIGTERM, c_int, kill};
+
+pub const DARWIN_USER_CACHE_DIR: i32 = libc::_CS_DARWIN_USER_CACHE_DIR;
+pub const DARWIN_USER_TEMP_DIR: i32 = libc::_CS_DARWIN_USER_TEMP_DIR;
+
+pub fn sysconf_path(name: i32) -> Option<PathBuf> {
+    unsafe {
+        // First call: get required buffer size
+        let len = confstr(name, std::ptr::null_mut(), 0);
+        if len == 0 {
+            return None;
+        }
+
+        let mut buf = vec![0u8; len as usize];
+
+        // Second call: fill buffer
+        let written = confstr(name, buf.as_mut_ptr() as *mut _, len);
+        if written == 0 {
+            return None;
+        }
+
+        let s = CStr::from_ptr(buf.as_ptr() as *const _)
+            .to_string_lossy()
+            .trim() // remove newline if any
+            .trim_end_matches('/') // match bash sed
+            .to_string();
+
+        Some(PathBuf::from(s))
+    }
+}
+
+pub fn kill_pids(pids: &str) -> Result<()> {
+    for pid_str in pids.split_whitespace() {
+        // parse PID
+        let pid = pid_str
+            .parse::<i32>()
+            .map_err(|_| anyhow!("Invalid PID: {}", pid_str))?;
+
+        // call libc::kill
+        let ret = unsafe { kill(pid as c_int, SIGTERM) };
+
+        if ret != 0 {
+            // errno contains the error code
+            let err = std::io::Error::last_os_error();
+            return Err(anyhow!("Failed to kill PID {}: {}", pid, err));
+        }
+    }
+    Ok(())
+}
 
 pub fn trash_files_nsfilemanager(paths: &[PathBuf]) -> Result<Vec<(PathBuf, String)>> {
     let mut failed_paths = Vec::new();
@@ -70,9 +121,7 @@ pub fn show_in_finder(path: &Path) -> Result<()> {
 
     let ns_path = NSString::from_str(s);
     let url = NSURL::fileURLWithPath(&ns_path);
-
     let urls = NSArray::from_slice(&[&*url]);
-
     let workspace = NSWorkspace::sharedWorkspace();
 
     unsafe {
@@ -81,35 +130,3 @@ pub fn show_in_finder(path: &Path) -> Result<()> {
 
     Ok(())
 }
-
-// old code that use finder spawn and osascript
-// pub fn show_in_finder(path: &Path) -> Result<()> {
-//     Command::new("open").arg("-R").arg(path).status()?;
-
-//     Ok(())
-// }
-
-// /// Move  paths to trash
-// pub fn trash_files(paths: &[PathBuf]) -> Result<()> {
-//     if paths.is_empty() {
-//         return Ok(());
-//     }
-
-//     let script = paths
-//         .iter()
-//         .map(|p| format!("POSIX file \"{}\"", p.display()))
-//         .collect::<Vec<_>>()
-//         .join(", ");
-
-//     let applescript = format!(
-//         "tell application \"Finder\" to move {{{}}} to trash",
-//         script
-//     );
-
-//     Command::new("osascript")
-//         .arg("-e")
-//         .arg(applescript)
-//         .status()?;
-
-//     Ok(())
-// }

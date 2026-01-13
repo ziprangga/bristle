@@ -2,7 +2,10 @@ use anyhow::Result;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use crate::app_status::{Status, StatusMessage};
+use crate::{
+
+    app_status::{Status, StatusMessage},
+};
 use cleaner::Cleaner;
 
 #[derive(Debug, Clone)]
@@ -12,6 +15,7 @@ pub enum AppMessage {
     ScanApp(Result<Cleaner, String>),
 
     ConfirmKill(Result<Cleaner, String>),
+    // ConfirmKillDecisision(Result<Cleaner, String>, bool),
 
     UpdateCleaner(Cleaner),
     OpenSelectedPath(usize),
@@ -36,6 +40,8 @@ pub struct AppState {
 
     pub cleaner: Cleaner,
     pub selected_file: Option<usize>,
+
+    // pub kill_modal: KillModal,
 }
 
 impl AppState {
@@ -51,12 +57,15 @@ impl AppState {
         let cleaner = Cleaner::default();
         let selected_file = None;
 
+        // let kill_modal = KillModal::default();
+
         Self {
             input_file,
             output_file,
             status,
             cleaner,
             selected_file,
+            // kill_modal,
         }
     }
 

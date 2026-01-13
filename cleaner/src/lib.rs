@@ -1,6 +1,6 @@
 mod app_data;
-mod foundation;
 mod helpers;
+mod syscom;
 pub use app_data::*;
 pub use helpers::*;
 
@@ -135,7 +135,7 @@ impl Cleaner {
             .collect();
 
         // delete all associate_files
-        let failed_paths = foundation::trash_files_nsfilemanager(&paths)?;
+        let failed_paths = syscom::trash_files_nsfilemanager(&paths)?;
 
         Ok(failed_paths)
     }
@@ -164,7 +164,7 @@ impl Cleaner {
     }
 
     pub fn show_in_finder(path: &Path) -> Result<()> {
-        foundation::show_in_finder(path)
+        syscom::show_in_finder(path)
     }
 
     pub fn reset(&mut self) {

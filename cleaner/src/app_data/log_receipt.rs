@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use crate::app_data::AppInfo;
 use crate::app_data::LocationsScan;
 use crate::app_data::app_info::MatchRules;
-use crate::foundation::run_lsbom_command;
+use crate::syscom::run_lsbom_command;
 
 #[derive(Debug, Default, Clone)]
 pub struct LogReceipt {

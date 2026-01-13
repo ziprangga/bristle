@@ -5,8 +5,10 @@ edition = { workspace = true }
 
 
 [dependencies]
-common-debug = { path = "../common-debug" }
-status = { path = "../status" }
+common-debug = { workspace = true }
+status = { workspace = true }
+
+# ==============
 log = { workspace = true }
 anyhow = { workspace = true }
 plist = { workspace = true }
@@ -18,3 +20,5 @@ objc2 = { workspace = true }
 objc2-foundation = { workspace = true }
 libc = { workspace = true }
 objc2-app-kit = { workspace = true }
+rustix = { workspace = true }
+nix = { workspace = true }
