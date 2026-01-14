@@ -6,12 +6,12 @@
 
 ---
 
-**Bristo** is a cleanup tool designed to safely remove applications and their associated files or folders from the macOS system.
+About Bristo
+Bristo is a lightweight macOS cleanup tool built with Rust and a simple GUI using **[iced](https://github.com/iced-rs/iced)**. It helps safely inspect and remove unnecessary application files, including protected locations, BOM logs, and app metadata.
 
-This app was built using open-source components and inspired by privacy guides from **[Sunknudsen](https://github.com/sunknudsen/guides/tree/main/archive/how-to-clean-uninstall-macos-apps-using-appcleaner-open-source-alternative)**. Some of the scripts in this app adapt references from his guides, so I want to give him a big thank you!
+This app was built using open-source components and inspired by privacy guides from **[Sunknudsen](https://github.com/sunknudsen/guides/tree/main/archive/how-to-clean-uninstall-macos-apps-using-appcleaner-open-source-alternative)**. Some scripts in Bristo adapt references from his guides, so a big thank you goes to him!
 
-The app’s interface is kept simple using Rust with gui using iced rs, with the main goal of helping my beloved wife and friends who rarely use the terminal on macOS.
-On top of that, this project also serves as a way for me to dive deeper into Rust.
+The main goal is to help my friends and beloved wife who rarely use the terminal on macOS. On top of that, this project also serves as a way for me to dive deeper into Rust.
 
 #### "Inspect and compile it"
 
@@ -19,41 +19,35 @@ On top of that, this project also serves as a way for me to dive deeper into Rus
 
 ## Permissions and Privacy Notice for macOS
 
-To perform cleanup app effectively, **Bristo** requires specific permissions when running on macOS. Below is a detailed explanation:
+To perform app cleanup effectively, **Bristo** requires specific permissions when running on macOS. Below is a detailed explanation:
 
-### Access Data from other Application (Automation Permission)
+### Access Data from other Application
+Bristo may prompt for Access Data from other Application because it uses system APIs to inspect or query other apps safely — for example, reading BOM logs, metadata, or identifying running processes.
 
-Bristo interacts with automation like "osascript" or "command (lsbom)" to do some job like get bom log and ask user it truly need to kill process from app that want to remove.
+- This prompt appears even if Bristo only reads harmless metadata — no actual control or modification of other apps is performed.
 
-**This permission is required.**
+- Denying this permission does not prevent scanning or viewing files.
 
-- Without this permission, Bristo cannot do some automation.
-  This permission can be skipped but some function that need it maybe will fail and need to do manually.
-  **will be improve in the future so this permission not needed**
+- You can skip granting this permission; any step that depends on it may need to be done manually.
 
-**How to Grant Access:**
-
-1. Go to **System Preferences → Security & Privacy → Privacy → Automation**.
-2. Ensure **Bristo** is allowed to control Finder.
+**How to Grant Access Data from other Application (Optional)**
+1. open System Preferences → Security & Privacy → Privacy → Automation.
+2. Ensure **Bristo** is allowed.
 3. Restart the application after granting this permission.
 
 ### Access to Full Disk (Full Disk Access Permission)
+Bristo needs access to protected locations, such as ~/Library/Containers, which are restricted by macOS’s security system. This access allows Bristo to safely move files or folders to the Trash during cleanup operations.
 
-Bristo interacts with many location **like** **~/Library/Containe** where this protected by TCC in Mac System,
+This permission is required. 
+Without it, Bristo cannot remove some files or folders inside these protected locations. You can skip granting this permission, but any restricted files will need to be deleted manually.
 
-location scan can be inspect in the code.
-
-**This permission is required.**  
-Without this permission, Bristo cannot move files or folders inside **~/Library/Containe** to the Trash.
-This permission can be skipped but for folder or file inside **~/Library/Containe** that need access using this permission, need delete manually.
-
-**How to Grant Full Disk Access:**
-
-1. Go to **System Preferences → Security & Privacy → Privacy → Full Disk Access**.
+**How to Grant Full Disk Access**
+1.Open System Preferences → Security & Privacy → Privacy → Full Disk Access.
 2. Ensure **Bristo** in the list and enabled.
 3. Restart the application after granting this permission.
 
-#### Inspect the code for more information and to know what the code doing and trigger Permission and Privacy.
+#### Inspect the Code (Optional)
+The source code shows which operations and locations may trigger these permissions for transparency and safety.
 
 ---
 
@@ -64,13 +58,13 @@ Bristo makes cleaning up applications simple and intuitive. Follow these steps:
 ### Selecting an Application
 
 - **Drag & Drop**: Drag the application you want to clean into the Bristo window.
-- **Export Bom Logs**: Use to export bom logs file, it can be use for more advanced inspection manually (you can watch Sunknudsen explain).
+- **Export Bom Logs**: Export BOM log files (if available) for advanced inspection. These logs can be used for manual review or troubleshooting — you can also refer to Sunknudsen’s explanation for guidance.
 
 ---
 
 ### Displaying Related Files or Folders
 
-Once an application is selected, Bristo will display a list of related files or folders.
+Once an application is added, Bristo will display a list of related files or folders.
 
 - **Delete All**: Click the **Move to Trash** button to move all files/folders to the Trash.
 
@@ -92,9 +86,9 @@ To open the location of a file or folder:
 
 ### Searching for Log Files (BOM File Log)
 
-Bristo can also search for log files to help with more thorough cleanup.
+Bristo can search for BOM log files to enable a more thorough cleanup if the application provides them.
 
-- **Default Location**: Log files are automatically saved to the **Desktop** but can be replace in input field.
+- **Default Location**: Log files are saved to the **Desktop** by default, but you can change this location using the input field.
 
 ---
 
